@@ -1,19 +1,25 @@
-package init;
+package main;
 
+import sceneObjects.Triangle;
 import imageRW.ZachImageWriter;
 
-public class RandomNoise {
+public class MainImageGenerator {
 
 	public static void main(String[] args) {
 		//dummy image
 		String dummyFileName = "startingImages/sunset.jpg";
 		
 		//noise image
-		String renderedImageFileName = "imagesMade/sampleRender2.jpg";
+		String renderedImageFileName = "imagesMade/sampleRender3.jpg";
 		
 		//height and width of image
 		int imageHeight = 1200;
 		int imageWidth = 1200;
+		
+		//background color is set here
+		int backgroundR = 120;
+		int backgroundG = 120;
+		int backgroundB = 120;
 		
 		//this array is used to generate the image data
 		int[][][] imageData = new int[3][imageWidth][imageHeight];
@@ -21,9 +27,17 @@ public class RandomNoise {
 		double width = imageWidth;
 		double rowN = 0;
 		double colN = 0;
-		int circleNumber = 0;
+		double imagePlaneX, imagePlaneY;
 		
 		System.out.println("Now Computing Image Data");
+		
+		double[] vertexACoords = {0.0,0.0,-2.0};
+		double[] vertexBCoords = {0.0,1.0,-2.0};
+		double[] vertexCCoords = {1.0,0.0,-2.0};
+		
+		double[] rgbVal = {0.0,1.0,0.0};
+		
+		Triangle wallOne = new Triangle(vertexACoords,vertexBCoords,vertexCCoords);
 		
 		//loops through all the pixels generating them
 		for(int rowNum = 0; rowNum < imageData[0].length; rowNum++){
@@ -32,22 +46,19 @@ public class RandomNoise {
 				
 
 				rowN = rowNum; colN = colNum;
+				imagePlaneX = rowN/width;
+				imagePlaneY = (height-colN)/height;
 				
-				circleNumber = circleNumber(rowN/width,(height-colN)/height);
-				
-				imageData[0][rowNum][colNum] = 0;
-				imageData[1][rowNum][colNum] = 255;
-				imageData[2][rowNum][colNum] = 0;
-				
-				if(circleNumber%2 == 1){
-					imageData[0][rowNum][colNum] = 255;
-					imageData[1][rowNum][colNum] = 0;
-					imageData[2][rowNum][colNum] = 0;
-				}else if(circleNumber != 0){
-					imageData[0][rowNum][colNum] = 255;
+				if(wallOne.doesItIntersect(imagePlaneX, imagePlaneY, -1)){
+					imageData[0][rowNum][colNum] = 0;
 					imageData[1][rowNum][colNum] = 255;
-					imageData[2][rowNum][colNum] = 255;
+					imageData[2][rowNum][colNum] = 0;
 				}
+				
+				imageData[0][rowNum][colNum] = backgroundR;
+				imageData[1][rowNum][colNum] = backgroundG;
+				imageData[2][rowNum][colNum] = backgroundB;
+				
 			}
 		}
 		
