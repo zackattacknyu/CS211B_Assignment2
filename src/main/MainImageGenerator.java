@@ -31,7 +31,7 @@ public class MainImageGenerator {
 		
 		System.out.println("Now Computing Image Data");
 		
-		double[] vertexACoords = {0.0,0.0,-2.0};
+		double[] vertexACoords = {1.0,1.0,-3.0};
 		double[] vertexBCoords = {0.0,1.0,-2.0};
 		double[] vertexCCoords = {1.0,0.0,-2.0};
 		
@@ -48,6 +48,10 @@ public class MainImageGenerator {
 				rowN = rowNum; colN = colNum;
 				imagePlaneX = rowN/width;
 				imagePlaneY = (height-colN)/height;
+				
+				//transform from [0,1]x[0,1] range to [-1,-1]x[1,1] range
+				imagePlaneX = 2*imagePlaneX - 1;
+				imagePlaneY = 2*imagePlaneY - 1;
 				
 				if(wallOne.doesItIntersect(imagePlaneX, imagePlaneY, -1)){
 					imageData[0][rowNum][colNum] = 0;
