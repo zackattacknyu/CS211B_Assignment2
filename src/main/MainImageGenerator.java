@@ -53,11 +53,13 @@ public class MainImageGenerator {
 					imageData[0][rowNum][colNum] = 0;
 					imageData[1][rowNum][colNum] = 255;
 					imageData[2][rowNum][colNum] = 0;
+				}else{
+					imageData[0][rowNum][colNum] = backgroundR;
+					imageData[1][rowNum][colNum] = backgroundG;
+					imageData[2][rowNum][colNum] = backgroundB;
 				}
 				
-				imageData[0][rowNum][colNum] = backgroundR;
-				imageData[1][rowNum][colNum] = backgroundG;
-				imageData[2][rowNum][colNum] = backgroundB;
+				
 				
 			}
 		}
