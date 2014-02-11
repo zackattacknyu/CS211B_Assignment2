@@ -31,9 +31,9 @@ public class MainImageGenerator {
 		
 		System.out.println("Now Computing Image Data");
 		
-		double[] vertexACoords = {1.0,1.0,-3.0};
-		double[] vertexBCoords = {0.0,1.0,-2.0};
-		double[] vertexCCoords = {1.0,0.0,-2.0};
+		double[] vertexACoords = {0.0,0.0,-10.0};
+		double[] vertexBCoords = {0.0,40.0,-10.0};
+		double[] vertexCCoords = {4,-4,-2};
 		
 		double[] rgbVal = {0.0,1.0,0.0};
 		
