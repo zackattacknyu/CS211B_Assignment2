@@ -1,5 +1,6 @@
 package main;
 
+import sceneObjects.SceneObject;
 import sceneObjects.Triangle;
 import imageRW.ZachImageWriter;
 
@@ -31,13 +32,26 @@ public class MainImageGenerator {
 		
 		System.out.println("Now Computing Image Data");
 		
-		double[] vertexACoords = {0.0,0.0,-10.0};
-		double[] vertexBCoords = {0.0,40.0,-10.0};
-		double[] vertexCCoords = {4,-4,-2};
+		double[] wall1_vertexA = {0.0,0.0,-10.0};
+		double[] wall1_vertexB = {0.0,40.0,-10.0};
+		double[] wall1_vertexC = {4.0,-4.0,-2.0};
+		double[] wall1_rgbVals = {0.0,1.0,0.0};
 		
-		double[] rgbVal = {0.0,1.0,0.0};
+		double[] wall2_vertexA = {0.0,0.0,-10.0};
+		double[] wall2_vertexB = {0.0,40.0,-10.0};
+		double[] wall2_vertexC = {-4.0,-4.0,-2.0};
+		double[] wall2_rgbVals = {1.0,0.0,0.0};
 		
-		Triangle wallOne = new Triangle(vertexACoords,vertexBCoords,vertexCCoords);
+		SceneObject[] objects = new SceneObject[2];
+		
+		objects[0] = new Triangle(wall1_vertexA,wall1_vertexB,wall1_vertexC);
+		objects[0].setRGB(wall1_rgbVals[0], wall1_rgbVals[1], wall1_rgbVals[2]);
+		
+		objects[1] = new Triangle(wall2_vertexA,wall2_vertexB,wall2_vertexC);
+		objects[1].setRGB(wall2_rgbVals[0], wall2_rgbVals[1], wall2_rgbVals[2]);
+		
+		boolean objectFound = false;
+		double[] currentRGB = new double[3];
 		
 		//loops through all the pixels generating them
 		for(int rowNum = 0; rowNum < imageData[0].length; rowNum++){
@@ -53,16 +67,21 @@ public class MainImageGenerator {
 				imagePlaneX = 2*imagePlaneX - 1;
 				imagePlaneY = 2*imagePlaneY - 1;
 				
-				if(wallOne.doesItIntersect(imagePlaneX, imagePlaneY, -1)){
-					imageData[0][rowNum][colNum] = 0;
-					imageData[1][rowNum][colNum] = 255;
-					imageData[2][rowNum][colNum] = 0;
-				}else{
+				objectFound = false;
+				for(SceneObject obj: objects){
+					if(obj.doesItIntersect(imagePlaneX, imagePlaneY, -1)){
+						currentRGB = obj.getRGB();
+						objectFound = true;
+						imageData[0][rowNum][colNum] = (int) (currentRGB[0]*255);
+						imageData[1][rowNum][colNum] = (int) (currentRGB[1]*255);
+						imageData[2][rowNum][colNum] = (int) (currentRGB[2]*255);
+					}
+				}
+				if(!objectFound){
 					imageData[0][rowNum][colNum] = backgroundR;
 					imageData[1][rowNum][colNum] = backgroundG;
 					imageData[2][rowNum][colNum] = backgroundB;
 				}
-				
 				
 				
 			}
@@ -70,6 +89,7 @@ public class MainImageGenerator {
 		
 		
 		System.out.println("Image Data computed. Now writing image");
+		
 		//this writes the image using the image data
 		ZachImageWriter.writeImageUsingImageSize(dummyFileName, renderedImageFileName, imageData);
 		

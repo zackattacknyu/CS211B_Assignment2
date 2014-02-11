@@ -1,6 +1,6 @@
 package sceneObjects;
 
-public class Sphere {
+public class Sphere extends SceneObject{
 
 	private double centerX;
 	private double centerY;
@@ -28,5 +28,12 @@ public class Sphere {
 
 	public double getRadius() {
 		return radius;
+	}
+
+	@Override
+	public boolean doesItIntersect(double rayVectorX, double rayVectorY,
+			double rayVectorZ) {
+		// TODO Auto-generated method stub
+		return false;
 	}
 }
