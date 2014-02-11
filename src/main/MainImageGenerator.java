@@ -42,13 +42,21 @@ public class MainImageGenerator {
 		double[] wall2_vertexC = {-4.0,-4.0,-2.0};
 		double[] wall2_rgbVals = {1.0,0.0,0.0};
 		
-		SceneObject[] objects = new SceneObject[2];
+		double[] wall3_vertexA = {0.0,0.0,-10.0};
+		double[] wall3_vertexB = {4.0,-4.0,-2.0};
+		double[] wall3_vertexC = {-4.0,-4.0,-2.0};
+		double[] wall3_rgbVals = {0.0,0.0,1.0};
+		
+		SceneObject[] objects = new SceneObject[3];
 		
 		objects[0] = new Triangle(wall1_vertexA,wall1_vertexB,wall1_vertexC);
 		objects[0].setRGB(wall1_rgbVals[0], wall1_rgbVals[1], wall1_rgbVals[2]);
 		
 		objects[1] = new Triangle(wall2_vertexA,wall2_vertexB,wall2_vertexC);
 		objects[1].setRGB(wall2_rgbVals[0], wall2_rgbVals[1], wall2_rgbVals[2]);
+		
+		objects[2] = new Triangle(wall3_vertexA,wall3_vertexB,wall3_vertexC);
+		objects[2].setRGB(wall3_rgbVals[0], wall3_rgbVals[1], wall3_rgbVals[2]);
 		
 		boolean objectFound = false;
 		double[] currentRGB = new double[3];
