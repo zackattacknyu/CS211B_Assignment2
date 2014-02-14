@@ -70,9 +70,38 @@ Interval Block::GetSlab( const Vec3 &v ) const
 
 bool Block::Intersect( const Ray &ray, HitInfo &hitinfo ) const
     {
-	//
-    //******** FILL IN AS NEEDED ****************
-    //
+	/*
+	* With this primitive, we need to compute the intersection with each face. 
+	*	Each face has a constant x, y, or z
+	*	and the other coordinates vary
+	*
+	* This means we end up wanting to solve the following system (using z face as example)
+	*	ray_x + t*direction_x = alpha*max_x + (1-alpha)*min_x
+	*	ray_y + t*direction_y = beta*max_y + (1-beta)*min_y
+	*	ray_z + t*direction_z = min_z
+	*
+	*You first solve for t
+	*		t = (min_z - ray_z)/direction_z
+	*
+	* If t > 0 you continue
+	*
+	*You then solve for alpha which are rearranging is as follows:
+	*	alpha = ( ray_x + t*direction_x - min_x )/( max_x - min_x)
+	*
+	* If 0 <= alpha <= 1 you continue
+	*
+	*You then solve for beta which after rearranging is as follows
+	*	beta = ( ray_y + t*direction_y - min_y )/(max_y - min_y)
+	*
+	*
+	*For the other ones, you follow the same thing but switch x, y, and z
+	*/
+
+	//see if it intersects min z face
+
+
+
+
     return false;  // Remember to change this line!
     }
 
