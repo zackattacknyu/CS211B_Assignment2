@@ -97,12 +97,34 @@ bool Block::Intersect( const Ray &ray, HitInfo &hitinfo ) const
 	*For the other ones, you follow the same thing but switch x, y, and z
 	*/
 
+	double t, alpha, beta;
+	double current_t = 5000;
+
 	//see if it intersects min z face
+	t = (Min.z - ray.origin.z)/(ray.direction.z);
+	if(t > 0 && t < current_t){
+		alpha = (ray.origin.x + t*ray.direction.x - Min.x)/(Max.x - Min.x);
+		if(alpha >= 0 && alpha <= 1){
+			beta = (ray.origin.y + t*ray.direction.y - Min.y)/(Max.y - Min.y);
 
+			if(beta >= 0 && beta <= 1){
 
+				//it intersects the face at that point
+				current_t = t;
+				hitinfo.distance = t;
+				hitinfo.point    = ray.origin + t * ray.direction;
+				hitinfo.normal.x = 0; hitinfo.normal.y = 0; hitinfo.normal.z = 1;
+				hitinfo.object   = this;
 
+			}
+		}
+	}
 
-    return false;  // Remember to change this line!
+	if(current_t < 5000){
+		return true;
+	}else{
+		return false;
+	}
     }
 
 int Block::GetSamples( const Vec3 &P, const Vec3 &N, Sample *samples, int n ) const
