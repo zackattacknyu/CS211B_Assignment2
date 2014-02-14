@@ -157,7 +157,7 @@ bool Block::Intersect( const Ray &ray, HitInfo &hitinfo ) const
 	}
 	
 	hitinfo.distance = tmin;
-	hitinfo.point    = ray.origin + tmax * ray.direction;
+	hitinfo.point    = ray.origin + tmin * ray.direction;
 	//hitinfo.normal.x = normalX; hitinfo.normal.y = normalY; hitinfo.normal.z = normalZ;
 	hitinfo.object   = this;
 	
