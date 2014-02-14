@@ -99,26 +99,32 @@ bool Block::Intersect( const Ray &ray, HitInfo &hitinfo ) const
 
 	double t, alpha, beta;
 	double current_t = 5000;
+	double* tVals = new double[2];
 
-	//see if it intersects min z face
-	t = (Min.z - ray.origin.z)/(ray.direction.z);
-	if(t > 0 && t < current_t){
-		alpha = (ray.origin.x + t*ray.direction.x - Min.x)/(Max.x - Min.x);
-		if(alpha >= 0 && alpha <= 1){
-			beta = (ray.origin.y + t*ray.direction.y - Min.y)/(Max.y - Min.y);
+	//see if it intersects min and max z face
+	tVals[0] = (Min.z - ray.origin.z)/(ray.direction.z); //t val at min z face
+	tVals[1] = (Max.z - ray.origin.z)/(ray.direction.z); //t val at max z face
+	for(int index = 0; index < 2; index++){
+		t = tVals[index];
+		if(t > 0 && t < current_t){
+			alpha = (ray.origin.x + t*ray.direction.x - Min.x)/(Max.x - Min.x);
+			if(alpha >= 0 && alpha <= 1){
+				beta = (ray.origin.y + t*ray.direction.y - Min.y)/(Max.y - Min.y);
 
-			if(beta >= 0 && beta <= 1){
+				if(beta >= 0 && beta <= 1){
 
-				//it intersects the face at that point
-				current_t = t;
-				hitinfo.distance = t;
-				hitinfo.point    = ray.origin + t * ray.direction;
-				hitinfo.normal.x = 0; hitinfo.normal.y = 0; hitinfo.normal.z = 1;
-				hitinfo.object   = this;
+					//it intersects the face at that point
+					current_t = t;
+					hitinfo.distance = t;
+					hitinfo.point    = ray.origin + t * ray.direction;
+					hitinfo.normal.x = 0; hitinfo.normal.y = 0; hitinfo.normal.z = 1;
+					hitinfo.object   = this;
 
+				}
 			}
 		}
 	}
+	
 
 	if(current_t < 5000){
 		return true;
