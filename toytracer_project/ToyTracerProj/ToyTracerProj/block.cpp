@@ -71,114 +71,97 @@ Interval Block::GetSlab( const Vec3 &v ) const
 bool Block::Intersect( const Ray &ray, HitInfo &hitinfo ) const
     {
 	/*
-	* With this primitive, we need to compute the intersection with each face. 
-	*	Each face has a constant x, y, or z
-	*	and the other coordinates vary
-	*
-	* This means we end up wanting to solve the following system (using z face as example)
-	*	ray_x + t*direction_x = alpha*max_x + (1-alpha)*min_x
-	*	ray_y + t*direction_y = beta*max_y + (1-beta)*min_y
-	*	ray_z + t*direction_z = min_z
-	*
-	*You first solve for t
-	*		t = (min_z - ray_z)/direction_z
-	*
-	* If t > 0 you continue
-	*
-	*You then solve for alpha which are rearranging is as follows:
-	*	alpha = ( ray_x + t*direction_x - min_x )/( max_x - min_x)
-	*
-	* If 0 <= alpha <= 1 you continue
-	*
-	*You then solve for beta which after rearranging is as follows
-	*	beta = ( ray_y + t*direction_y - min_y )/(max_y - min_y)
-	*
-	*
-	*For the other ones, you follow the same thing but switch x, y, and z
+	* With this primitive, we need to compute the intersection
+	*	with each axis.
+	* This will let us get an interval of t values for x, y, and z
+	*	The overlap of the intervals will be the regions of our box
+	*	If the final interval is in our acceptable t range, the ray
+	*		intersects the box
+	* If the intervals can't overlap, then the ray does not intersect
+	* 
+	* Here is the procedure in more detail:
+	*	(1) For x, compute t_at_xmin = (Min_x - origin_x)/(direction_x)
+	*			   compute t_at_xmax = (Max_x - origin_x)/(direction_x)
+	*	(2) if direction_x >= 0
+	*				set tx_min = t_at_xmin; tx_max=t_at_xmax
+	*		else
+	*				set tx_max = t_at_xmin; tx_min=t_at_xmax
+	*	(3) repeat (1) and (2) but for y and z
+	*	(4) set (t_min,t_max) equal to the intersection of 
+	*			(tx_min,tx_max), (ty_min,ty_max), (tz_min,tz_max)
 	*/
+	const double min_t = 1;
+	const double max_t = 20;
+	double normalX,normalY,normalZ;
 
-	double t, alpha, beta;
-	double current_t = 5000;
-	double* tVals = new double[2];
+	double t_at_xmin,t_at_xmax,t_at_ymin,t_at_ymax,t_at_zmin,t_at_zmax;
+	double tmin, tmax, tymin, tymax, tzmin, tzmax;
 
-	//see if it intersects min and max z face
-	tVals[0] = (Min.z - ray.origin.z)/(ray.direction.z); //t val at min z face
-	tVals[1] = (Max.z - ray.origin.z)/(ray.direction.z); //t val at max z face
-	for(int index = 0; index < 2; index++){
-		t = tVals[index];
-		if(t > 0 && t < current_t){
-			alpha = (ray.origin.x + t*ray.direction.x - Min.x)/(Max.x - Min.x);
-			if(alpha >= 0 && alpha <= 1){
-				beta = (ray.origin.y + t*ray.direction.y - Min.y)/(Max.y - Min.y);
+	t_at_xmin = (Min.x - ray.origin.x)/(ray.direction.x); 
+	t_at_xmax = (Max.x - ray.origin.x)/(ray.direction.x); 
 
-				if(beta >= 0 && beta <= 1){
-
-					//it intersects the face at that point
-					current_t = t;
-					hitinfo.distance = t;
-					hitinfo.point    = ray.origin + t * ray.direction;
-					hitinfo.normal.x = 0; hitinfo.normal.y = 0; hitinfo.normal.z = 1;
-					hitinfo.object   = this;
-
-				}
-			}
-		}
-	}
-	
-	//see if it intersects min and max y face
-	tVals[0] = (Min.y - ray.origin.y)/(ray.direction.y); //t val at min z face
-	tVals[1] = (Max.y - ray.origin.y)/(ray.direction.y); //t val at max z face
-	for(int index = 0; index < 2; index++){
-		t = tVals[index];
-		if(t > 0 && t < current_t){
-			alpha = (ray.origin.x + t*ray.direction.x - Min.x)/(Max.x - Min.x);
-			if(alpha >= 0 && alpha <= 1){
-				beta = (ray.origin.z + t*ray.direction.z - Min.z)/(Max.z - Min.z);
-
-				if(beta >= 0 && beta <= 1){
-
-					//it intersects the face at that point
-					current_t = t;
-					hitinfo.distance = t;
-					hitinfo.point    = ray.origin + t * ray.direction;
-					hitinfo.normal.x = 0; hitinfo.normal.y = 1; hitinfo.normal.z = 0;
-					hitinfo.object   = this;
-
-				}
-			}
-		}
-	}
-
-	//see if it intersects min and max x face
-	tVals[0] = (Min.x - ray.origin.x)/(ray.direction.x); //t val at min z face
-	tVals[1] = (Max.x - ray.origin.x)/(ray.direction.x); //t val at max z face
-	for(int index = 0; index < 2; index++){
-		t = tVals[index];
-		if(t > 0 && t < current_t){
-			alpha = (ray.origin.y + t*ray.direction.y - Min.y)/(Max.y - Min.y);
-			if(alpha >= 0 && alpha <= 1){
-				beta = (ray.origin.z + t*ray.direction.z - Min.z)/(Max.z - Min.z);
-
-				if(beta >= 0 && beta <= 1){
-
-					//it intersects the face at that point
-					current_t = t;
-					hitinfo.distance = t;
-					hitinfo.point    = ray.origin + t * ray.direction;
-					hitinfo.normal.x = 1; hitinfo.normal.y = 0; hitinfo.normal.z = 0;
-					hitinfo.object   = this;
-
-				}
-			}
-		}
-	}
-
-	if(current_t < 5000){
-		return true;
+	if(ray.direction.x >= 0){
+		tmin = t_at_xmin;
+		tmax = t_at_xmax;
 	}else{
+		tmin = t_at_xmax;
+		tmax = t_at_xmin;
+	}
+
+	t_at_ymin = (Min.y - ray.origin.y)/(ray.direction.y); 
+	t_at_ymax = (Max.y - ray.origin.y)/(ray.direction.y); 
+
+	if(ray.direction.y >= 0){
+		tymin = t_at_ymin;
+		tymax = t_at_ymax;
+	}else{
+		tymin = t_at_ymax;
+		tymax = t_at_ymin;
+	}
+
+	if( (tmin > tymax) || (tmax < tymin) ){
 		return false;
 	}
 
+	if(tymin > tmin){
+		tmin = tymin;
+	}
+	if(tymax < tmax){
+		tmax = tymax;
+	}
+
+	t_at_zmin = (Min.z - ray.origin.z)/(ray.direction.z); 
+	t_at_zmax = (Max.z - ray.origin.z)/(ray.direction.z); 
+
+	if(ray.direction.z >= 0){
+		tzmin = t_at_zmin;
+		tzmax = t_at_zmax;
+	}else{
+		tzmin = t_at_zmax;
+		tzmax = t_at_zmin;
+	}
+
+	if( (tmin > tzmax) || (tmax < tzmin) ){
+		return false;
+	}
+
+	if(tzmin > tmin){
+		tmin = tzmin;
+	}
+	if(tzmax < tmax){
+		tmax = tzmax;
+	}
+
+	if( (tmin < min_t) || (tmax > max_t) ){
+		return false;
+	}
+	
+	hitinfo.distance = tmin;
+	hitinfo.point    = ray.origin + tmax * ray.direction;
+	//hitinfo.normal.x = normalX; hitinfo.normal.y = normalY; hitinfo.normal.z = normalZ;
+	hitinfo.object   = this;
+	
+	return true;
     }
 
 int Block::GetSamples( const Vec3 &P, const Vec3 &N, Sample *samples, int n ) const
