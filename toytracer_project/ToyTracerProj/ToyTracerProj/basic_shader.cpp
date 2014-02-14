@@ -65,6 +65,18 @@ Color basic_shader::Shade( const Scene &scene, const HitInfo &hit ) const
     //******** FILL IN AS NEEDED ****************
     //******** FILL IN AS NEEDED ****************
 
+	//get the attentuation
+	//	A = 1/(a + b*r + c*r^2)
+	double attenuation_a = 0.0;
+	double attenuation_b = 0.0;
+	double attenuation_c = 0.12;
+	double attenuation;
+	double lightDistance;
+	Vec3 lightVector;
+	double diffuseFactor;
+	Color diffuseColor = Color();
+	Color finalColor;
+
     for( unsigned i = 0; i < scene.NumLights(); i++ )
         {
         const Object *light = scene.GetLight(i);
@@ -72,15 +84,25 @@ Color basic_shader::Shade( const Scene &scene, const HitInfo &hit ) const
         AABB box = GetBox( *light );
         Vec3 LightPos( Center( box ) ); 
 
+		//get the attenuation factor for the light
+		lightVector = LightPos - P;
+		lightDistance = Length(lightVector);
+		attenuation = 1/(attenuation_a + attenuation_b*lightDistance + attenuation_c*lightDistance*lightDistance);
+
+		//gets the diffuse component
+		diffuseFactor = max(0,lightVector*N);
+		diffuseColor = diffuseColor + (attenuation*diffuseFactor)*emission;
+
         //******** FILL IN AS NEEDED ****************
         //******** FILL IN AS NEEDED ****************
         //******** FILL IN AS NEEDED ****************
 
         }
 
+	finalColor = color + diffuseColor*diffuse;
     //******** FILL IN AS NEEDED ****************
     //******** FILL IN AS NEEDED ****************
     //******** FILL IN AS NEEDED ****************
 
-    return diffuse; // Remember to change this line!
+	return finalColor; 
     }
