@@ -149,11 +149,36 @@ bool Block::Intersect( const Ray &ray, HitInfo &hitinfo ) const
 		}
 	}
 
+	//see if it intersects min and max x face
+	tVals[0] = (Min.x - ray.origin.x)/(ray.direction.x); //t val at min z face
+	tVals[1] = (Max.x - ray.origin.x)/(ray.direction.x); //t val at max z face
+	for(int index = 0; index < 2; index++){
+		t = tVals[index];
+		if(t > 0 && t < current_t){
+			alpha = (ray.origin.y + t*ray.direction.y - Min.y)/(Max.y - Min.y);
+			if(alpha >= 0 && alpha <= 1){
+				beta = (ray.origin.z + t*ray.direction.z - Min.z)/(Max.z - Min.z);
+
+				if(beta >= 0 && beta <= 1){
+
+					//it intersects the face at that point
+					current_t = t;
+					hitinfo.distance = t;
+					hitinfo.point    = ray.origin + t * ray.direction;
+					hitinfo.normal.x = 1; hitinfo.normal.y = 0; hitinfo.normal.z = 0;
+					hitinfo.object   = this;
+
+				}
+			}
+		}
+	}
+
 	if(current_t < 5000){
 		return true;
 	}else{
 		return false;
 	}
+
     }
 
 int Block::GetSamples( const Vec3 &P, const Vec3 &N, Sample *samples, int n ) const
