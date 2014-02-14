@@ -92,7 +92,6 @@ bool Block::Intersect( const Ray &ray, HitInfo &hitinfo ) const
 	*/
 	const double min_t = 1;
 	const double max_t = 20;
-	double normalX,normalY,normalZ;
 
 	double t_at_xmin,t_at_xmax,t_at_ymin,t_at_ymax,t_at_zmin,t_at_zmax;
 	double tmin, tmax, tymin, tymax, tzmin, tzmax;
@@ -156,11 +155,32 @@ bool Block::Intersect( const Ray &ray, HitInfo &hitinfo ) const
 		return false;
 	}
 	
+	/* Knowing tmin will give us the face that we are looking at
+	*	Since the faces are axis-aligned, the normals are
+	*		<0,0,1> , <0,1,0>, <1,0,0> 
+	*		<0,0,-1> , <0,-1,0>, or <-1,0,0>
+	*		depending on which face it is
+	*	We will see what face it is an use that for the normals
+	*/
+	Vec3 currentNormal = Vec3(0,0,0);
+	if(tmin == t_at_xmin){
+		currentNormal = Vec3(-1,0,0);
+	}else if(tmin == t_at_xmax){
+		currentNormal = Vec3(1,0,0);
+	}else if(tmin == t_at_ymin){
+		currentNormal = Vec3(0,-1,0);
+	}else if(tmin == t_at_ymax){
+		currentNormal = Vec3(0,1,0);
+	}else if(tmin == t_at_zmin){
+		currentNormal = Vec3(0,0,-1);
+	}else if(tmin == t_at_zmax){
+		currentNormal = Vec3(0,0,1);
+	}
+
 	hitinfo.distance = tmin;
 	hitinfo.point    = ray.origin + tmin * ray.direction;
-	//hitinfo.normal.x = normalX; hitinfo.normal.y = normalY; hitinfo.normal.z = normalZ;
 	hitinfo.object   = this;
-	
+	hitinfo.normal = currentNormal;
 	return true;
     }
 
