@@ -38,9 +38,6 @@ Plugin *basic_shader::ReadString( const string &params )
 
 Color basic_shader::Shade( const Scene &scene, const HitInfo &hit ) const
     {
-    // ********* Keep as little or as much of the following code as you wish *******
-    // ********* Keep as little or as much of the following code as you wish *******
-    // ********* Keep as little or as much of the following code as you wish *******
     Ray ray;
     HitInfo otherhit;
     static const double epsilon = 1.0E-4;
@@ -61,21 +58,20 @@ Color basic_shader::Shade( const Scene &scene, const HitInfo &hit ) const
 
     if( E * N < 0.0 ) N = -N;  // Flip the normal if necessary.
 
-    //******** FILL IN AS NEEDED ****************
-    //******** FILL IN AS NEEDED ****************
-    //******** FILL IN AS NEEDED ****************
-
 	//get the attentuation
 	//	A = 1/(a + b*r + c*r^2)
 	double attenuation_a = 0.0;
 	double attenuation_b = 0.0;
-	double attenuation_c = 0.12;
+	double attenuation_c = 0.025;
 	double attenuation;
 	double lightDistance;
 	Vec3 lightVector;
 	double diffuseFactor;
+	double specularFactor;
 	Color diffuseColor = Color();
+	Color specularColor = Color();
 	Color finalColor;
+	Vec3 currentR;
 
     for( unsigned i = 0; i < scene.NumLights(); i++ )
         {
@@ -88,21 +84,25 @@ Color basic_shader::Shade( const Scene &scene, const HitInfo &hit ) const
 		lightVector = LightPos - P;
 		lightDistance = Length(lightVector);
 		attenuation = 1/(attenuation_a + attenuation_b*lightDistance + attenuation_c*lightDistance*lightDistance);
+		lightVector = Unit(lightVector);
 
 		//gets the diffuse component
 		diffuseFactor = max(0,lightVector*N);
+		
+		//gets the specular component
+		currentR = Unit(2.0*(N*lightVector)*N - lightVector);
+		specularFactor = max(0, pow(currentR*E,e) );
+
+		if(diffuseFactor == 0){
+			specularFactor = 0;
+		}
+
+		//calculate the new color
+		specularColor = specularColor + (attenuation*specularFactor)*emission;
 		diffuseColor = diffuseColor + (attenuation*diffuseFactor)*emission;
-
-        //******** FILL IN AS NEEDED ****************
-        //******** FILL IN AS NEEDED ****************
-        //******** FILL IN AS NEEDED ****************
-
         }
 
-	finalColor = color + diffuseColor*diffuse;
-    //******** FILL IN AS NEEDED ****************
-    //******** FILL IN AS NEEDED ****************
-    //******** FILL IN AS NEEDED ****************
+	finalColor = color + diffuseColor*diffuse + specularColor*diffuse;
 
 	return finalColor; 
     }
