@@ -151,7 +151,10 @@ bool Block::Intersect( const Ray &ray, HitInfo &hitinfo ) const
 		tmax = tzmax;
 	}
 
-	if( (tmin < min_t) || (tmax > max_t) ){
+	if(tmin > hitinfo.distance){
+		return false;
+	}
+	if(tmin<0){
 		return false;
 	}
 	
