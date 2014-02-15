@@ -72,6 +72,7 @@ Color basic_shader::Shade( const Scene &scene, const HitInfo &hit ) const
 	Color specularColor = Color();
 	Color finalColor;
 	Vec3 currentR;
+	bool objectWasHit = false;
 
     for( unsigned i = 0; i < scene.NumLights(); i++ )
         {
@@ -91,10 +92,21 @@ Color basic_shader::Shade( const Scene &scene, const HitInfo &hit ) const
 		//light ray to case to determine occulsion
 		ray.origin = P;
 		ray.direction = lightVector;
+		HitInfo objectHit;
+		objectHit.ignore = NULL;
+		objectHit.distance = Infinity;
 
 		//cast the ray 
-		if( scene.Cast( ray, otherhit) ){
-			//object was hit
+		objectWasHit = false;
+		if( scene.Cast( ray, objectHit) ){
+			
+			if(objectHit.object != NULL){
+				objectWasHit = true;
+			}
+
+		}
+		
+		if(objectWasHit){
 			specularFactor = 0;
 			diffuseFactor = 0;
 		}else{
