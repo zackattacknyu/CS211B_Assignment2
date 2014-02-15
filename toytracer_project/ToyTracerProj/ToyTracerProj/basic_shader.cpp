@@ -62,7 +62,7 @@ Color basic_shader::Shade( const Scene &scene, const HitInfo &hit ) const
 	//	A = 1/(a + b*r + c*r^2)
 	double attenuation_a = 0.0;
 	double attenuation_b = 0.0;
-	double attenuation_c = 0.025;
+	double attenuation_c = 0.02;
 	double attenuation;
 	double lightDistance;
 	Vec3 lightVector;
@@ -80,21 +80,35 @@ Color basic_shader::Shade( const Scene &scene, const HitInfo &hit ) const
         AABB box = GetBox( *light );
         Vec3 LightPos( Center( box ) ); 
 
-		//get the attenuation factor for the light
+		//gets the light Vector
 		lightVector = LightPos - P;
 		lightDistance = Length(lightVector);
-		attenuation = 1/(attenuation_a + attenuation_b*lightDistance + attenuation_c*lightDistance*lightDistance);
 		lightVector = Unit(lightVector);
-
-		//gets the diffuse component
-		diffuseFactor = max(0,lightVector*N);
 		
-		//gets the specular component
-		currentR = Unit(2.0*(N*lightVector)*N - lightVector);
-		specularFactor = max(0, pow(currentR*E,e) );
+		//gets the attenuation factor
+		attenuation = 1/(attenuation_a + attenuation_b*lightDistance + attenuation_c*lightDistance*lightDistance);
 
-		if(diffuseFactor == 0){
+		//light ray to case to determine occulsion
+		ray.origin = P;
+		ray.direction = lightVector;
+
+		//cast the ray 
+		if( scene.Cast( ray, otherhit) ){
+			//object was hit
 			specularFactor = 0;
+			diffuseFactor = 0;
+		}else{
+		
+			//gets the diffuse component
+			diffuseFactor = max(0,lightVector*N);
+		
+			//gets the specular component
+			currentR = Unit(2.0*(N*lightVector)*N - lightVector);
+			specularFactor = max(0, pow(currentR*E,e) );
+
+			if(diffuseFactor == 0){
+				specularFactor = 0;
+			}
 		}
 
 		//calculate the new color
