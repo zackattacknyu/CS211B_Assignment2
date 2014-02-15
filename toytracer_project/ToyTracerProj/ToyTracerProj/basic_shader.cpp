@@ -56,6 +56,10 @@ Color basic_shader::Shade( const Scene &scene, const HitInfo &hit ) const
     double e = mat->Phong_exp;
     double k = mat->ref_index;
 
+	if(hit.object->Inside(P)){
+		P = P + epsilon*N;
+	}
+
     if( E * N < 0.0 ) N = -N;  // Flip the normal if necessary.
 
 	//get the attentuation
