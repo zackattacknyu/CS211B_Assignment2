@@ -144,8 +144,8 @@ Color basic_shader::Shade( const Scene &scene, const HitInfo &hit ) const
 	reflectionRay.generation = hit.ray.generation + 1;
 	reflectedColor = scene.Trace(reflectionRay);
 
-	finalColor = colorWithLighting + reflectedColor;
-	finalColor = finalColor/2.0;
+	//now combine calculated color with reflected color
+	finalColor = colorWithLighting + r*reflectedColor;
 
 	return finalColor; 
     }
