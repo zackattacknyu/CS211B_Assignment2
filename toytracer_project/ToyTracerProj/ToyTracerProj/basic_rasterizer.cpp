@@ -98,7 +98,17 @@ bool basic_rasterizer::Rasterize( string file_name, const Camera &cam, const Sce
     // Loop over the entire image, casting a single ray per pixel.  This nested loop
     // must be modified to accommodate anti-aliasing.
 	
-	const int numRaysAntiAliasing = 20;
+	/*
+	*Deciding on how many rays is tricky. Too few and there is not much anti-aliasing.
+	*	Too many and it takes too long to compute. 
+	*
+	*300 is probably a good number. The point of anti-aliasing is for the edges to not appear
+	*	so jagged. Since there are only 256 displayable colors in each channel, 
+	*	there are only at most 256 colors in the interpolation between regions, 
+	*	thus 300 is a good round number above that. 
+	*/
+	const int numRaysAntiAliasing = 300;
+	
 	Color currentColor = Color();
 	double randomX,randomY;
     cout << "Rendering line 0";
