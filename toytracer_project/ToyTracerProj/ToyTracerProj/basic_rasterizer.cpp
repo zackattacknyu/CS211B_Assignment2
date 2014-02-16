@@ -97,7 +97,10 @@ bool basic_rasterizer::Rasterize( string file_name, const Camera &cam, const Sce
 
     // Loop over the entire image, casting a single ray per pixel.  This nested loop
     // must be modified to accommodate anti-aliasing.
-
+	
+	const int numRaysAntiAliasing = 20;
+	Color currentColor = Color();
+	double randomX,randomY;
     cout << "Rendering line 0";
     for( unsigned int i = 0; i < cam.y_res; i++ )
         {
@@ -106,8 +109,21 @@ bool basic_rasterizer::Rasterize( string file_name, const Camera &cam, const Sce
         cout.flush();
         for( unsigned int j = 0; j < cam.x_res; j++ )
             {
-            ray.direction = Unit( O + (j + 0.5) * dR - (i + 0.5) * dU  );
-            I(i,j) = ToneMap( scene.Trace( ray ) );
+				//shoots multiple rays in the pixel window
+				for(int rayNum = 0; rayNum < numRaysAntiAliasing; rayNum++){
+
+					//generates a random pair in [0,1]x[0,1] to be used as the current ray
+					randomX = (double)rand() / RAND_MAX;
+					randomY = (double)rand() / RAND_MAX;
+
+					//shoots the random ray found and gets its color
+					ray.direction = Unit( O + (j + randomX) * dR - (i + randomY) * dU  );
+					currentColor = currentColor + scene.Trace(ray);
+				}
+
+				//blends the colors together of the found rays
+				currentColor = currentColor/numRaysAntiAliasing;
+				I(i,j) = ToneMap(currentColor);
             }
         }
 
