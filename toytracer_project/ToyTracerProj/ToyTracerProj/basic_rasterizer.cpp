@@ -101,13 +101,10 @@ bool basic_rasterizer::Rasterize( string file_name, const Camera &cam, const Sce
 	/*
 	*Deciding on how many rays is tricky. Too few and there is not much anti-aliasing.
 	*	Too many and it takes too long to compute. 
-	*
-	*300 is probably a good number. The point of anti-aliasing is for the edges to not appear
-	*	so jagged. Since there are only 256 displayable colors in each channel, 
-	*	there are only at most 256 colors in the interpolation between regions, 
-	*	thus 300 is a good round number above that. 
+	*2000 is a good number once you can wait a while. It should be lowered to 20 though
+	*	when you are testing the code. 
 	*/
-	const int numRaysAntiAliasing = 300;
+	const int numRaysAntiAliasing = 2000;
 	
 	Color currentColor = Color();
 	double randomX,randomY;
