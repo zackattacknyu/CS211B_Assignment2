@@ -39,6 +39,8 @@ Plugin *basic_shader::ReadString( const string &params )
 Color basic_shader::Shade( const Scene &scene, const HitInfo &hit ) const
     {
     Ray ray;
+	Ray reflectionRay;
+
     HitInfo otherhit;
     static const double epsilon = 1.0E-4;
     if( Emitter( hit.object ) ) return hit.object->material->emission;
@@ -75,6 +77,8 @@ Color basic_shader::Shade( const Scene &scene, const HitInfo &hit ) const
 	Color diffuseColor = Color();
 	Color specularColor = Color();
 	Color finalColor;
+	Color colorWithLighting;
+	Color reflectedColor;
 	Vec3 currentR;
 	bool objectWasHit = false;
 
@@ -132,7 +136,16 @@ Color basic_shader::Shade( const Scene &scene, const HitInfo &hit ) const
 		diffuseColor = diffuseColor + (attenuation*diffuseFactor)*emission;
         }
 
-	finalColor = color + diffuseColor*diffuse + specularColor*diffuse;
+	colorWithLighting = color + diffuseColor*diffuse + specularColor*diffuse;
+
+	//now do reflection
+	reflectionRay.origin = P;
+	reflectionRay.direction = R;
+	reflectionRay.generation = hit.ray.generation + 1;
+	reflectedColor = scene.Trace(reflectionRay);
+
+	finalColor = colorWithLighting + reflectedColor;
+	finalColor = finalColor/2.0;
 
 	return finalColor; 
     }
