@@ -21,6 +21,11 @@ int main( int argc, char *argv[] )
     Scene  scene;
     Camera camera;
 
+	bool doMotionBlur = true;
+	Scene scene2;
+	string fname2 = "scenes/scene2";
+	string output_fname = "scenes/scene_1_2_blur";
+
     // Print out a banner with the current version number of the software.
 
     cout << "**** ToyTracer Version "
@@ -49,7 +54,7 @@ int main( int argc, char *argv[] )
 
     string fname = DefaultScene;
     if( argc > 1 ) fname = argv[1];
-
+	
     // Invoke the builder to construct the scene.
 
     if( !builder->BuildScene( fname, camera, scene ) )
@@ -57,6 +62,14 @@ int main( int argc, char *argv[] )
         cerr << "Error encountered while building scene." << endl;
         return error_building_scene;
         }
+
+	if(doMotionBlur){
+		if( !builder->BuildScene( fname2, camera, scene2 ) )
+        {
+			cerr << "Error encountered while building scene." << endl;
+			return error_building_scene;
+        }
+	}
 
     // If a rasterizer was not specified by the builder, look to see if one has
     // been registered.
@@ -74,11 +87,25 @@ int main( int argc, char *argv[] )
     // Generate the image using the rasterizer that was either specified by
     // the builder or supplied by default.
 
-    if( !scene.rasterize->Rasterize( fname, camera, scene ) )
+	if( !scene.rasterize->Rasterize( fname, camera, scene ) )
+    {
+		cerr << "Error encountered while rasterizing." << endl;
+		return error_rasterizing_image;
+    }
+
+	if(doMotionBlur){
+		if( !scene.rasterize->Rasterize( fname2, camera, scene2 ) )
+		{
+			cerr << "Error encountered while rasterizing." << endl;
+			return error_rasterizing_image;
+		}
+
+		if( !scene.rasterize->Rasterize2( output_fname, camera, scene,scene2 ) )
         {
-        cerr << "Error encountered while rasterizing." << endl;
-        return error_rasterizing_image;
+			cerr << "Error encountered while rasterizing." << endl;
+			return error_rasterizing_image;
         }
+	}
 
     DestroyRegisteredPlugins();
     return no_errors;
