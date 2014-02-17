@@ -104,36 +104,52 @@ Color basic_shader::Shade( const Scene &scene, const HitInfo &hit ) const
 		objectHit.ignore = NULL;
 		objectHit.distance = Infinity;
 
-		//cast the ray 
-		objectWasHit = false;
-		if( scene.Cast( ray, objectHit) ){
-			
-			if(objectHit.object != NULL){
-				objectWasHit = true;
-			}
+		const int numRaysSoftShadows = 100;
+		double shadowFactor = 0;
+		double randomLightDeltaX;
+		double randomLightDeltaY;
+		double randomLightDeltaZ;
+		Vec3 deltaVector;
+		Vec3 currentLightVector;
 
+		//calculate the soft shadow
+		for(int rayIndex = 0; rayIndex < numRaysSoftShadows; rayIndex++){
+			randomLightDeltaX = (double)rand() / RAND_MAX;
+			randomLightDeltaY = (double)rand() / RAND_MAX;
+			randomLightDeltaZ = (double)rand() / RAND_MAX;
+			deltaVector = Vec3(randomLightDeltaX,randomLightDeltaY,randomLightDeltaZ);
+			deltaVector = deltaVector/10.0;
+			currentLightVector = lightVector + deltaVector;
+
+			ray.direction = currentLightVector;
+			objectHit.ignore = NULL;
+			objectHit.distance = Infinity;
+
+			if(scene.Cast(ray,objectHit) ){
+				if(objectHit.object != NULL){
+					shadowFactor = shadowFactor + 1;
+				}
+			}
 		}
-		
-		if(objectWasHit){
-			specularFactor = 0;
-			diffuseFactor = 0;
-		}else{
-		
-			//gets the diffuse component
-			diffuseFactor = max(0,lightVector*N);
-		
-			//gets the specular component
-			currentR = Unit(2.0*(N*lightVector)*N - lightVector);
-			specularFactor = max(0, pow(currentR*E,e) );
 
-			if(diffuseFactor == 0){
-				specularFactor = 0;
-			}
+		//calculate the shadow factor
+		shadowFactor = shadowFactor/numRaysSoftShadows;
+		shadowFactor = 1-shadowFactor;
+		
+		//gets the diffuse component
+		diffuseFactor = max(0,lightVector*N);
+		
+		//gets the specular component
+		currentR = Unit(2.0*(N*lightVector)*N - lightVector);
+		specularFactor = max(0, pow(currentR*E,e) );
+
+		if(diffuseFactor == 0){
+			specularFactor = 0;
 		}
 
 		//calculate the new color
-		specularColor = specularColor + (attenuation*specularFactor)*emission;
-		diffuseColor = diffuseColor + (attenuation*diffuseFactor)*emission;
+		specularColor = specularColor + shadowFactor*(attenuation*specularFactor)*emission;
+		diffuseColor = diffuseColor + shadowFactor*(attenuation*diffuseFactor)*emission;
         }
 
 	colorWithLighting = color + diffuseColor*diffuse + specularColor*diffuse;
