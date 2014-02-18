@@ -40,8 +40,11 @@ Color basic_shader::Shade( const Scene &scene, const HitInfo &hit ) const
     {
     Ray ray;
 	Ray reflectionRay;
+	Ray refractedRay;
+	Ray secondaryRefractedRay;
 
     HitInfo otherhit;
+	HitInfo refractionHit;
     static const double epsilon = 1.0E-4;
     if( Emitter( hit.object ) ) return hit.object->material->emission;
 
@@ -57,6 +60,7 @@ Color basic_shader::Shade( const Scene &scene, const HitInfo &hit ) const
     Color  r = mat->reflectivity;
     double e = mat->Phong_exp;
     double k = mat->ref_index;
+	Color t = mat->translucency;
 
 	if(hit.object->Inside(P)){
 		P = P + epsilon*N;
@@ -79,6 +83,7 @@ Color basic_shader::Shade( const Scene &scene, const HitInfo &hit ) const
 	Color finalColor;
 	Color colorWithLighting;
 	Color reflectedColor;
+	Color refractedColor;
 	Vec3 currentR;
 	bool objectWasHit = false;
 
@@ -101,10 +106,10 @@ Color basic_shader::Shade( const Scene &scene, const HitInfo &hit ) const
 		ray.origin = P;
 		ray.direction = lightVector;
 		HitInfo objectHit;
-		objectHit.ignore = NULL;
+		//objectHit.ignore = NULL;
 		objectHit.distance = Infinity;
 
-		const int numRaysSoftShadows = 100;
+		const int numRaysSoftShadows = 50;
 		double shadowFactor = 0;
 		double randomLightDeltaX;
 		double randomLightDeltaY;
@@ -122,7 +127,7 @@ Color basic_shader::Shade( const Scene &scene, const HitInfo &hit ) const
 			currentLightVector = lightVector + deltaVector;
 
 			ray.direction = currentLightVector;
-			objectHit.ignore = NULL;
+			//objectHit.ignore = NULL;
 			objectHit.distance = Infinity;
 
 			if(scene.Cast(ray,objectHit) ){
@@ -154,14 +159,43 @@ Color basic_shader::Shade( const Scene &scene, const HitInfo &hit ) const
 
 	colorWithLighting = color + diffuseColor*diffuse + specularColor*diffuse;
 
-	//now do reflection
+	//set variables for reflection
 	reflectionRay.origin = P;
 	reflectionRay.direction = R;
 	reflectionRay.generation = hit.ray.generation + 1;
+
+	//set variables for refraction
+	refractedRay.origin = P-epsilon*10*N;
+	refractedRay.direction = E;
+	refractedRay.generation = hit.ray.generation + 1;
+	refractedColor = Color();
+	refractionHit.distance = Infinity;
+	if(scene.Cast(refractedRay,refractionHit)){
+		
+		//it has hit the same object. just pass through then. 
+		/*if(refractionHit.object == hit.object){
+			secondaryRefractedRay.origin = refractionHit.point;
+			secondaryRefractedRay.direction = E;
+			secondaryRefractedRay.generation = hit.ray.generation + 1;
+
+			//now do refraction
+			refractedColor = scene.Trace(refractedRay);
+		}*/
+
+		secondaryRefractedRay.origin = refractionHit.point + epsilon*N;
+		secondaryRefractedRay.direction = E;
+		secondaryRefractedRay.generation = hit.ray.generation + 1;
+
+		//now do refraction
+		refractedColor = scene.Trace(refractedRay);
+		
+	}
+
+	//do the reflection
 	reflectedColor = scene.Trace(reflectionRay);
 
 	//now combine calculated color with reflected color
-	finalColor = colorWithLighting + r*reflectedColor;
+	finalColor = (-1*t + Color(1.0,1.0,1.0))*(colorWithLighting + r*reflectedColor) + t*refractedColor;
 
 	return finalColor; 
     }

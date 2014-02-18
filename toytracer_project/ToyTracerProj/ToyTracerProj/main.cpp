@@ -21,7 +21,7 @@ int main( int argc, char *argv[] )
     Scene  scene;
     Camera camera;
 
-	bool doMotionBlur = false;
+	bool doMotionBlur = true;
 	Scene scene2;
 	string fname2 = "scenes/scene2";
 	string output_fname = "scenes/scene_1_2_blur";
