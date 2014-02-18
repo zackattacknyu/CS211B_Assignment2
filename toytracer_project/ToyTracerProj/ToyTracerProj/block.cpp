@@ -95,6 +95,7 @@ bool Block::Intersect( const Ray &ray, HitInfo &hitinfo ) const
 
 	double t_at_xmin,t_at_xmax,t_at_ymin,t_at_ymax,t_at_zmin,t_at_zmax;
 	double tmin, tmax, tymin, tymax, tzmin, tzmax;
+	double dist;
 
 	t_at_xmin = (Min.x - ray.origin.x)/(ray.direction.x); 
 	t_at_xmax = (Max.x - ray.origin.x)/(ray.direction.x); 
@@ -151,14 +152,28 @@ bool Block::Intersect( const Ray &ray, HitInfo &hitinfo ) const
 		tmax = tzmax;
 	}
 
-	if(tmin > hitinfo.distance){
-		return false;
-	}
-	if(tmin<0){
-		return false;
+	//look at tmin and tmax to see which one should be used
+	if(tmin > 0){
+		if(tmin > hitinfo.distance){
+			return false;
+		}
+		dist = tmin;
+	}else{
+		//we are either inside the block or the block is behind us
+
+		if(tmax <= 0){
+			//the block is behind us
+			return false;
+		}
+		if(tmax > hitinfo.distance){
+			return false;
+		}
+
+		//we are definitely inside the block so set the intersection point to tmax
+		dist = tmax;
 	}
 	
-	/* Knowing tmin will give us the face that we are looking at
+	/* Knowing dist will give us the face that we are looking at
 	*	Since the faces are axis-aligned, the normals are
 	*		<0,0,1> , <0,1,0>, <1,0,0> 
 	*		<0,0,-1> , <0,-1,0>, or <-1,0,0>
@@ -166,22 +181,22 @@ bool Block::Intersect( const Ray &ray, HitInfo &hitinfo ) const
 	*	We will see what face it is an use that for the normals
 	*/
 	Vec3 currentNormal = Vec3(0,0,0);
-	if(tmin == t_at_xmin){
+	if(dist == t_at_xmin){
 		currentNormal = Vec3(-1,0,0);
-	}else if(tmin == t_at_xmax){
+	}else if(dist == t_at_xmax){
 		currentNormal = Vec3(1,0,0);
-	}else if(tmin == t_at_ymin){
+	}else if(dist == t_at_ymin){
 		currentNormal = Vec3(0,-1,0);
-	}else if(tmin == t_at_ymax){
+	}else if(dist == t_at_ymax){
 		currentNormal = Vec3(0,1,0);
-	}else if(tmin == t_at_zmin){
+	}else if(dist == t_at_zmin){
 		currentNormal = Vec3(0,0,-1);
-	}else if(tmin == t_at_zmax){
+	}else if(dist == t_at_zmax){
 		currentNormal = Vec3(0,0,1);
 	}
 
-	hitinfo.distance = tmin;
-	hitinfo.point    = ray.origin + tmin * ray.direction;
+	hitinfo.distance = dist;
+	hitinfo.point    = ray.origin + dist * ray.direction;
 	hitinfo.object   = this;
 	hitinfo.normal = currentNormal;
 	return true;
