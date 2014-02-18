@@ -55,6 +55,14 @@ begin List
     reflectivity [0.40, 0.40, 0.40]
     Phong_exp    15
     sphere       (0, 0, 0) 1
+	
+	diffuse      [0.96, 0.1, 0.1]
+    specular     [1.00, 0.85, 0.75]
+	reflectivity [0, 0, 0]
+    Phong_exp    15
+	translucency [0.3, 0.3, 0.3]
+	ref_index    0
+    sphere       (1.6, 1.0, 0) 0.5
 
 end
 
