@@ -165,8 +165,8 @@ Color basic_shader::Shade( const Scene &scene, const HitInfo &hit ) const
 	reflectionRay.generation = hit.ray.generation + 1;
 
 	//set variables for refraction
-	refractedRay.origin = P-epsilon*10*N;
-	refractedRay.direction = E;
+	refractedRay.origin = P-epsilon*N;
+	refractedRay.direction = -1*E;
 	refractedRay.generation = hit.ray.generation + 1;
 	refractedColor = Color();
 	refractionHit.distance = Infinity;
@@ -183,7 +183,7 @@ Color basic_shader::Shade( const Scene &scene, const HitInfo &hit ) const
 		}*/
 
 		secondaryRefractedRay.origin = refractionHit.point + epsilon*N;
-		secondaryRefractedRay.direction = E;
+		secondaryRefractedRay.direction = -1*E;
 		secondaryRefractedRay.generation = hit.ray.generation + 1;
 
 		//now do refraction
