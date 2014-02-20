@@ -23,7 +23,8 @@
 *2000 is a good number once you can wait a while. It should be lowered to 20 though
 *	when you are testing the code. 
 */
-static const int numRaysAntiAliasing = 10;
+static const double numRaysAntiAliasing = 1;
+static const double numRaysDepthOfField = 5;
 
 struct basic_rasterizer : public Rasterizer {
     basic_rasterizer() {}
@@ -108,7 +109,16 @@ bool basic_rasterizer::Rasterize( string file_name, const Camera &cam, const Sce
     // must be modified to accommodate anti-aliasing.
 	
 	Color currentColor = Color();
-	double randomX,randomY;
+	double randomX = 0.5;
+	double randomY = 0.5;
+	double randomDU = 0.5;
+	double randomDR = 0.5;
+	const double focalLength = 5;
+	Vec3 imagePlanePoint;
+	Vec3 currentOrigin;
+	Vec3 currentDirection;
+	const double radius = 20;
+	
     cout << "Rendering line 0";
     for( unsigned int i = 0; i < cam.y_res; i++ )
         {
@@ -117,20 +127,44 @@ bool basic_rasterizer::Rasterize( string file_name, const Camera &cam, const Sce
         cout.flush();
         for( unsigned int j = 0; j < cam.x_res; j++ )
             {
+				currentColor = Color();
+
 				//shoots multiple rays in the pixel window
 				for(int rayNum = 0; rayNum < numRaysAntiAliasing; rayNum++){
 
 					//generates a random pair in [0,1]x[0,1] to be used as the current ray
-					randomX = (double)rand() / RAND_MAX;
-					randomY = (double)rand() / RAND_MAX;
+					if(numRaysAntiAliasing > 1){ //in case we are not doing anti-aliasing
+						randomX = (double)rand() / RAND_MAX;
+						randomY = (double)rand() / RAND_MAX;
+					}
+					
 
 					//shoots the random ray found and gets its color
 					ray.direction = Unit( O + (j + randomX) * dR - (i + randomY) * dU  );
-					currentColor = currentColor + scene.Trace(ray);
+					imagePlanePoint = cam.eye + focalLength*ray.direction;
+
+					//shoot the ray from different origin points for depth of field effect
+					for(int dofNum = 0; dofNum < numRaysDepthOfField; dofNum++){
+
+						if(numRaysDepthOfField > 1){ //in case there is no depth of field
+							randomDU = (double)rand() / RAND_MAX;
+							randomDR = (double)rand() / RAND_MAX;
+						}
+						
+						//jitter the camera position
+						ray.origin = cam.eye + (randomDU-0.5)*radius*dR + (randomDR-0.5)*radius*dU;
+					
+						//get the direction from the jittered position to the image plane position
+						ray.direction = Unit(imagePlanePoint - ray.origin);
+
+						currentColor = currentColor + scene.Trace(ray);
+
+					}
+					
 				}
 
 				//blends the colors together of the found rays
-				currentColor = currentColor/numRaysAntiAliasing;
+				currentColor = currentColor/(numRaysAntiAliasing*numRaysDepthOfField);
 				I(i,j) = ToneMap(currentColor);
             }
         }
