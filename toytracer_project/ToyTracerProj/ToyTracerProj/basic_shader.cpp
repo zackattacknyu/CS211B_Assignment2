@@ -110,9 +110,8 @@ Color basic_shader::Shade( const Scene &scene, const HitInfo &hit ) const
 		//objectHit.ignore = NULL;
 		objectHit.distance = Infinity;
 
-		const int numRaysSoftShadows = 10;
+		const int numRaysSoftShadows = 100;
 		double shadowFactor = 0;
-		double randomLightDeltaX;
 		double randomLightDeltaY;
 		double randomLightDeltaZ;
 		Vec3 deltaVector;
@@ -120,11 +119,11 @@ Color basic_shader::Shade( const Scene &scene, const HitInfo &hit ) const
 
 		//calculate the soft shadow
 		for(int rayIndex = 0; rayIndex < numRaysSoftShadows; rayIndex++){
-			randomLightDeltaX = (double)rand() / RAND_MAX;
-			randomLightDeltaY = (double)rand() / RAND_MAX;
-			randomLightDeltaZ = (double)rand() / RAND_MAX;
-			deltaVector = Vec3(randomLightDeltaX,randomLightDeltaY,randomLightDeltaZ);
-			deltaVector = deltaVector/10.0;
+
+			//generates two numbers between -0.05 and 0.05
+			randomLightDeltaY = ( ((double)rand() / RAND_MAX) - 0.5)/10.0;
+			randomLightDeltaZ = ( ((double)rand() / RAND_MAX) - 0.5)/10.0;
+			deltaVector = Vec3(0.0,randomLightDeltaY,randomLightDeltaZ);
 			currentLightVector = lightVector + deltaVector;
 
 			ray.direction = currentLightVector;
