@@ -24,6 +24,7 @@ struct basic_shader : public Shader {
     virtual Plugin *ReadString( const string &params );
     virtual string MyName() const { return "basic_shader"; }
     virtual bool Default() const { return true; }
+	virtual Vec3 RefractionDirection(double n_1, double n_2, Vec3 incomingVector,Vec3 normalVector) const;
     };
 
 REGISTER_PLUGIN( basic_shader );
@@ -157,7 +158,7 @@ Color basic_shader::Shade( const Scene &scene, const HitInfo &hit ) const
 		diffuseColor = diffuseColor + shadowFactor*(attenuation*diffuseFactor)*emission;
         }
 
-	colorWithLighting = color + diffuseColor*diffuse + specularColor*diffuse;
+	colorWithLighting = color + diffuseColor*diffuse + specularColor*specular;
 
 	//set variables for reflection
 	reflectionRay.origin = P;
@@ -166,28 +167,26 @@ Color basic_shader::Shade( const Scene &scene, const HitInfo &hit ) const
 
 	//set variables for refraction
 	refractedRay.origin = P-epsilon*N;
-	refractedRay.direction = -1*E;
+	Vec3 refractionDir = RefractionDirection(1.0,k,E,N);
+	refractedRay.direction = refractionDir; //for refraction
 	refractedRay.generation = hit.ray.generation + 1;
 	refractedColor = Color();
-	refractionHit.distance = Infinity;
+	Vec3 newNormal;
+ 	refractionHit.distance = Infinity;
 	if(scene.Cast(refractedRay,refractionHit)){
+
+		//calculate the output ray direction
+
 		
-		//it has hit the same object. just pass through then. 
-		/*if(refractionHit.object == hit.object){
-			secondaryRefractedRay.origin = refractionHit.point;
-			secondaryRefractedRay.direction = E;
-			secondaryRefractedRay.generation = hit.ray.generation + 1;
-
-			//now do refraction
-			refractedColor = scene.Trace(refractedRay);
-		}*/
-
-		secondaryRefractedRay.origin = refractionHit.point + epsilon*N;
-		secondaryRefractedRay.direction = -1*E;
+		//secondaryRefractedRay.direction = -1*E; //for direct transparency
+		newNormal = refractionHit.normal;
+		secondaryRefractedRay.origin = refractionHit.point + epsilon*newNormal;
+		secondaryRefractedRay.direction = RefractionDirection(k,1.0,-1*refractionDir,-1*newNormal);
 		secondaryRefractedRay.generation = hit.ray.generation + 1;
 
 		//now do refraction
-		refractedColor = scene.Trace(refractedRay);
+
+		refractedColor = scene.Trace(secondaryRefractedRay);
 		
 	}
 
@@ -199,3 +198,17 @@ Color basic_shader::Shade( const Scene &scene, const HitInfo &hit ) const
 
 	return finalColor; 
     }
+
+	/*calculate the refraction direction
+	*	The derivation was inspired by Slides 22-23 of this lecture:
+	*		http://graphics.ucsd.edu/courses/cse168_s06/ucsd/lecture03.pdf
+	*/
+Vec3 basic_shader::RefractionDirection(double n_1, double n_2, Vec3 incomingVector,Vec3 normalVector) const{
+
+	double ratio = n_1/n_2;
+	double cos_theta = normalVector*incomingVector;
+	Vec3 Refrac_vertical = ratio*( normalVector*cos_theta - incomingVector);
+	double cos_phi_squared = 1 - ( ratio*ratio * (1-cos_theta*cos_theta));
+	Vec3 Refrac = Refrac_vertical - normalVector*sqrt(cos_phi_squared);
+	return Unit(Refrac);
+}
