@@ -110,7 +110,7 @@ Color basic_shader::Shade( const Scene &scene, const HitInfo &hit ) const
 		//objectHit.ignore = NULL;
 		objectHit.distance = Infinity;
 
-		const int numRaysSoftShadows = 10;
+		const int numRaysSoftShadows = 100;
 		double shadowFactor = 0;
 		double randomLightDeltaY;
 		double randomLightDeltaZ;
