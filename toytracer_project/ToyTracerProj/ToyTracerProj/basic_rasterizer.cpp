@@ -24,7 +24,7 @@
 *	when you are testing the code. 
 */
 static const double numRaysAntiAliasing = 1;
-static const double numRaysDepthOfField = 5;
+static const double numRaysDepthOfField = 1;
 
 struct basic_rasterizer : public Rasterizer {
     basic_rasterizer() {}
