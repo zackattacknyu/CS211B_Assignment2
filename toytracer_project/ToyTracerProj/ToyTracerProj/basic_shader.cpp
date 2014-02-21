@@ -163,6 +163,7 @@ Color basic_shader::Shade( const Scene &scene, const HitInfo &hit ) const
 	reflectionRay.origin = P;
 	reflectionRay.direction = R;
 	reflectionRay.generation = hit.ray.generation + 1;
+	reflectedColor = Color();
 
 	//set variables for refraction
 	refractedRay.origin = P-epsilon*N;
@@ -172,25 +173,36 @@ Color basic_shader::Shade( const Scene &scene, const HitInfo &hit ) const
 	refractedColor = Color();
 	Vec3 newNormal;
  	refractionHit.distance = Infinity;
-	if(scene.Cast(refractedRay,refractionHit)){
 
-		//calculate the output ray direction
+	//only do refraction if the transluency is greater than zero
+	//	this is an optimization so unnecessary refractions are not calculated
+	if( (t.red + t.green + t.blue) > epsilon){
+		if(scene.Cast(refractedRay,refractionHit)){
+
+			//calculate the output ray direction
 
 		
-		//secondaryRefractedRay.direction = -1*E; //for direct transparency
-		newNormal = refractionHit.normal;
-		secondaryRefractedRay.origin = refractionHit.point + epsilon*newNormal;
-		secondaryRefractedRay.direction = RefractionDirection(k,1.0,-1*refractionDir,-1*newNormal);
-		secondaryRefractedRay.generation = hit.ray.generation + 1;
+			//secondaryRefractedRay.direction = -1*E; //for direct transparency
+			newNormal = refractionHit.normal;
+			secondaryRefractedRay.origin = refractionHit.point + epsilon*newNormal;
+			secondaryRefractedRay.direction = RefractionDirection(k,1.0,-1*refractionDir,-1*newNormal);
+			secondaryRefractedRay.generation = hit.ray.generation + 1;
 
-		//now do refraction
+			//now do refraction
 
-		refractedColor = scene.Trace(secondaryRefractedRay);
+			refractedColor = scene.Trace(secondaryRefractedRay);
 		
+		}
 	}
+	
 
 	//do the reflection
-	reflectedColor = scene.Trace(reflectionRay);
+	//only do reflection if the reflectance is greater than zero
+	//	this is an optimization so unnecessary reflections are not calculated
+	if( (r.red + r.green + r.blue) > epsilon){
+		reflectedColor = scene.Trace(reflectionRay);
+	}
+	
 
 	//now combine calculated color with reflected color
 	finalColor = (-1*t + Color(1.0,1.0,1.0))*(colorWithLighting + r*reflectedColor) + t*refractedColor;
