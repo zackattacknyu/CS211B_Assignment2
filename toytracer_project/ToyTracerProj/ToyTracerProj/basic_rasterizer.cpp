@@ -157,6 +157,9 @@ bool basic_rasterizer::Rasterize( string file_name, const Camera &cam, const Sce
 						ray.direction = Unit(imagePlanePoint - ray.origin);
 
 						currentColor = currentColor + scene.Trace(ray);
+						if(doMotionBlur){
+							currentColor = currentColor + scene2.Trace(ray);
+						}
 
 					}
 					
@@ -164,6 +167,10 @@ bool basic_rasterizer::Rasterize( string file_name, const Camera &cam, const Sce
 
 				//blends the colors together of the found rays
 				currentColor = currentColor/(numRaysAntiAliasing*numRaysDepthOfField);
+				if(doMotionBlur){
+					currentColor = currentColor/(numRaysAntiAliasing*numRaysDepthOfField*2);
+				}
+
 				I(i,j) = ToneMap(currentColor);
             }
         }

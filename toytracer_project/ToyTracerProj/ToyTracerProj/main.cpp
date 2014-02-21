@@ -22,7 +22,7 @@ int main( int argc, char *argv[] )
 	Scene scene2;
     Camera camera;
 
-	bool doMotionBlur = false;
+	bool doMotionBlur = true;
 	bool renderScene2 = false; //used to render scene 2 if desired
 	string fname = "scenes/scene1";
 	string fname2 = "scenes/scene2";
