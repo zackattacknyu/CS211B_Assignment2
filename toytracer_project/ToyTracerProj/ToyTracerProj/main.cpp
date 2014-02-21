@@ -22,8 +22,12 @@ int main( int argc, char *argv[] )
 	Scene scene2;
     Camera camera;
 
-	bool doMotionBlur = true;
-	bool renderScene2 = false; //used to render scene 2 if desired
+	//whether or not to do motion blur
+	bool doMotionBlur = false;
+
+	//if motion blur is not done, this toggles whether or not to render scene 2 instead
+	bool renderScene2 = true; 
+
 	string fname = "scenes/scene1";
 	string fname2 = "scenes/scene2";
 	string output_fname = "scenes/scene_1_2_blur";
