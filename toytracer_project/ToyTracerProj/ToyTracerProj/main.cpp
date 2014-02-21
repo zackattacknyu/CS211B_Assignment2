@@ -19,10 +19,12 @@ static const string DefaultScene = "scenes/scene1";
 int main( int argc, char *argv[] )
     {
     Scene  scene;
+	Scene scene2;
     Camera camera;
 
 	bool doMotionBlur = false;
-	Scene scene2;
+	bool renderScene2 = false; //used to render scene 2 if desired
+	string fname = "scenes/scene1";
 	string fname2 = "scenes/scene2";
 	string output_fname = "scenes/scene_1_2_blur";
 
@@ -51,19 +53,19 @@ int main( int argc, char *argv[] )
 
     // Set the file name to a default, but substitute the argument given on the
 	// command line if there is one.
-
-    string fname = DefaultScene;
-    if( argc > 1 ) fname = argv[1];
+    //tring fname = DefaultScene;
+    //if( argc > 1 ) fname = argv[1];
 	
     // Invoke the builder to construct the scene.
 
-    if( !builder->BuildScene( fname, camera, scene ) )
+	if(doMotionBlur || !renderScene2){
+		if( !builder->BuildScene( fname, camera, scene ) )
         {
-        cerr << "Error encountered while building scene." << endl;
-        return error_building_scene;
+			cerr << "Error encountered while building scene." << endl;
+			return error_building_scene;
         }
-
-	if(doMotionBlur){
+	}
+	if(doMotionBlur || renderScene2){
 		if( !builder->BuildScene( fname2, camera, scene2 ) )
         {
 			cerr << "Error encountered while building scene." << endl;
@@ -87,24 +89,24 @@ int main( int argc, char *argv[] )
     // Generate the image using the rasterizer that was either specified by
     // the builder or supplied by default.
 
-	if( !scene.rasterize->Rasterize( fname, camera, scene ) )
-    {
-		cerr << "Error encountered while rasterizing." << endl;
-		return error_rasterizing_image;
-    }
-
 	if(doMotionBlur){
-		if( !scene.rasterize->Rasterize( fname2, camera, scene2 ) )
+		if( !scene.rasterize->Rasterize( output_fname, camera, scene, scene2,true ) )
 		{
 			cerr << "Error encountered while rasterizing." << endl;
 			return error_rasterizing_image;
 		}
-
-		if( !scene.rasterize->Rasterize2( output_fname, camera, scene,scene2 ) )
-        {
+	}else if(renderScene2){
+		if( !scene.rasterize->Rasterize( fname2, camera, scene2, scene,false ) )
+		{
 			cerr << "Error encountered while rasterizing." << endl;
 			return error_rasterizing_image;
-        }
+		}
+	}else{
+		if( !scene.rasterize->Rasterize( fname, camera, scene, scene2,false ) )
+		{
+			cerr << "Error encountered while rasterizing." << endl;
+			return error_rasterizing_image;
+		}
 	}
 
     DestroyRegisteredPlugins();

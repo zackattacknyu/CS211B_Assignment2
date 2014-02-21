@@ -147,9 +147,10 @@ struct Rasterizer : Plugin {  // The rasterizer creates all the primary rays.
     virtual bool Rasterize(
         string fname,         // File to write to (must include the extension).
         const Camera &camera, // Defines the view.
-        const Scene &scene    // Global scene description: object, envmap, etc.
+        const Scene &scene,    // Global scene description: object, envmap, etc.
+		const Scene &scene2,
+		const bool &doMotionBlur
         ) const = 0;
-	virtual bool Rasterize2( string fname, const Camera &, const Scene &, const Scene & ) const = 0;
     virtual plugin_type PluginType() const { return rasterizer_plugin; }
     };
 
