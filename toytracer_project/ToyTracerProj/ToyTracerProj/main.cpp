@@ -26,7 +26,7 @@ int main( int argc, char *argv[] )
 	bool doMotionBlur = false;
 
 	//if motion blur is not done, this toggles whether or not to render scene 2 instead
-	bool renderScene2 = false; 
+	bool renderScene2 = true; 
 
 	string fname = "scenes/scene1";
 	string fname2 = "scenes/scene2";
