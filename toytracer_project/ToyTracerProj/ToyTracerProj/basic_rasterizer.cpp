@@ -24,7 +24,7 @@
 *	when you are testing the code. 
 */
 static const double numRaysAntiAliasing = 1;
-static const double numRaysDepthOfField = 20;
+static const double numRaysDepthOfField = 1;
 
 struct basic_rasterizer : public Rasterizer {
     basic_rasterizer() {}
@@ -156,9 +156,11 @@ bool basic_rasterizer::Rasterize( string file_name, const Camera &cam, const Sce
 						//get the direction from the jittered position to the image plane position
 						ray.direction = Unit(imagePlanePoint - ray.origin);
 
-						currentColor = currentColor + scene.Trace(ray);
+						
 						if(doMotionBlur){
-							currentColor = currentColor + scene2.Trace(ray);
+							currentColor = currentColor + 0.15*scene.Trace(ray) + 0.85*scene2.Trace(ray);
+						}else{
+							currentColor = currentColor + scene.Trace(ray);
 						}
 
 					}
@@ -166,11 +168,7 @@ bool basic_rasterizer::Rasterize( string file_name, const Camera &cam, const Sce
 				}
 
 				//blends the colors together of the found rays
-				if(doMotionBlur){
-					currentColor = currentColor/(numRaysAntiAliasing*numRaysDepthOfField*2);
-				}else{
-					currentColor = currentColor/(numRaysAntiAliasing*numRaysDepthOfField);
-				}
+				currentColor = currentColor/(numRaysAntiAliasing*numRaysDepthOfField);
 
 				I(i,j) = ToneMap(currentColor);
             }
