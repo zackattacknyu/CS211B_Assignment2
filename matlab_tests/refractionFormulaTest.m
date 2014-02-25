@@ -17,15 +17,17 @@ For notation, we will use the following:
                 the calculation
 
 The formula will be as follows
-    R_vert = (n_eye)(N*(N.E) - E)/(n_ref)
-    cos_phi = sqrt( 1 - ( n_eye/n_ref )^2 (1 - (N.E)^2 ) )
-    R = R_vert - N*cos_phi
+    ratio = n_eye/n_ref
+    cos_theta = N.E
+    R_vert = ratio*(E - N*(cos_theta))
+    cos_phi_squared = 1 - ( ratio )^2 (1 - (cos_theta)^2 ) 
+    R = R_vert - N*sqrt(cos_phi_squared)
 %}
 
 n_eye = 1.0;
-n_ref = 1.3;
+n_ref = 1.0;
 E = [-1 1 0];
 N = [0 1 0];
 
-E = E/norm(E); %normalize the eye vector
-N = N/norm(N); %makes sure the normal vector is normalized
+R = refractionDirection(n_eye,n_ref,E,N)
+
