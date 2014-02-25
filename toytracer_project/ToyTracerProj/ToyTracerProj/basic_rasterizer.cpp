@@ -23,7 +23,7 @@
 *2000 is a good number once you can wait a while. It should be lowered to 20 though
 *	when you are testing the code. 
 */
-static const double numRaysAntiAliasing = 10;
+static const double numRaysAntiAliasing = 1;
 static const double numRaysDepthOfField = 20;
 
 struct basic_rasterizer : public Rasterizer {
@@ -166,9 +166,10 @@ bool basic_rasterizer::Rasterize( string file_name, const Camera &cam, const Sce
 				}
 
 				//blends the colors together of the found rays
-				currentColor = currentColor/(numRaysAntiAliasing*numRaysDepthOfField);
 				if(doMotionBlur){
 					currentColor = currentColor/(numRaysAntiAliasing*numRaysDepthOfField*2);
+				}else{
+					currentColor = currentColor/(numRaysAntiAliasing*numRaysDepthOfField);
 				}
 
 				I(i,j) = ToneMap(currentColor);
