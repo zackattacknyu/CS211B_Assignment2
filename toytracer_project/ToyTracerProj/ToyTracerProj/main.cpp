@@ -23,7 +23,7 @@ int main( int argc, char *argv[] )
     Camera camera;
 
 	//whether or not to do motion blur
-	bool doMotionBlur = true;
+	bool doMotionBlur = false;
 
 	//if motion blur is not done, this toggles whether or not to render scene 2 instead
 	bool renderScene2 = true; 
