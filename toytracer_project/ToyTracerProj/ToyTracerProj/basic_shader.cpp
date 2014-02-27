@@ -226,6 +226,7 @@ Vec3 basic_shader::RefractionDirection(double n_1, double n_2, Vec3 incomingVect
 	double cos_theta = normalVector*incomingVector;
 	Vec3 Refrac_vertical = ratio*( normalVector*cos_theta - incomingVector);
 	double cos_phi_squared = 1 - ( ratio*ratio * (1-cos_theta*cos_theta));
-	Vec3 Refrac = Refrac_vertical - normalVector*sqrt(cos_phi_squared);
+	Vec3 Refrac_horizontal = -1*normalVector*sqrt(cos_phi_squared);
+	Vec3 Refrac = Refrac_vertical + Refrac_horizontal;
 	return Unit(Refrac);
 }
