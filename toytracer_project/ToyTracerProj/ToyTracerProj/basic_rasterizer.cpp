@@ -23,7 +23,7 @@
 *2000 is a good number once you can wait a while. It should be lowered to 20 though
 *	when you are testing the code. 
 */
-static const double numRaysAntiAliasing = 10;
+static const double numRaysAntiAliasing = 1;
 static const double numRaysDepthOfField = 1;
 
 struct basic_rasterizer : public Rasterizer {

@@ -110,7 +110,7 @@ Color basic_shader::Shade( const Scene &scene, const HitInfo &hit ) const
 		//objectHit.ignore = NULL;
 		objectHit.distance = Infinity;
 
-		const int numRaysSoftShadows = 100;
+		const int numRaysSoftShadows = 1;
 		double shadowFactor = 0;
 		double randomLightDeltaY;
 		double randomLightDeltaZ;
@@ -120,10 +120,16 @@ Color basic_shader::Shade( const Scene &scene, const HitInfo &hit ) const
 		//calculate the soft shadow
 		for(int rayIndex = 0; rayIndex < numRaysSoftShadows; rayIndex++){
 
-			//generates two numbers between -0.05 and 0.05
-			randomLightDeltaY = ( ((double)rand() / RAND_MAX) - 0.5)/10.0;
-			randomLightDeltaZ = ( ((double)rand() / RAND_MAX) - 0.5)/10.0;
-			deltaVector = Vec3(0.0,randomLightDeltaY,randomLightDeltaZ);
+
+			if(numRaysSoftShadows > 1){
+				//generates two numbers between -0.05 and 0.05
+				randomLightDeltaY = ( ((double)rand() / RAND_MAX) - 0.5)/10.0;
+				randomLightDeltaZ = ( ((double)rand() / RAND_MAX) - 0.5)/10.0;
+				deltaVector = Vec3(0.0,randomLightDeltaY,randomLightDeltaZ);
+			}else{
+				deltaVector = Vec3(0.0,0.0,0.0);
+			}
+			
 			currentLightVector = lightVector + deltaVector;
 
 			ray.direction = currentLightVector;
@@ -216,7 +222,7 @@ Color basic_shader::Shade( const Scene &scene, const HitInfo &hit ) const
 	*/
 Vec3 basic_shader::RefractionDirection(double n_1, double n_2, Vec3 incomingVector,Vec3 normalVector) const{
 
-	double ratio = n_1/n_2;
+	double ratio = n_1/n_2; //ratio = 1.0/ratio;
 	double cos_theta = normalVector*incomingVector;
 	Vec3 Refrac_vertical = ratio*( normalVector*cos_theta - incomingVector);
 	double cos_phi_squared = 1 - ( ratio*ratio * (1-cos_theta*cos_theta));
