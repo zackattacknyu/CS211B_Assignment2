@@ -46,7 +46,7 @@ Color basic_shader::Shade( const Scene &scene, const HitInfo &hit ) const
 
     HitInfo otherhit;
 	HitInfo refractionHit;
-    static const double epsilon = 1.0E-4;
+    static const double epsilon = 1.0E-10;
     if( Emitter( hit.object ) ) return hit.object->material->emission;
 
     Material *mat   = hit.object->material;
@@ -172,7 +172,14 @@ Color basic_shader::Shade( const Scene &scene, const HitInfo &hit ) const
 	reflectedColor = Color();
 
 	//set variables for refraction
+
+	/*
+	TODO: Try reducing epsilon here and then doing a while loop until 
+			it is inside/outside the object. That could be the reason
+			for refraction problems. 
+	*/
 	refractedRay.origin = P-epsilon*N;
+	
 	Vec3 refractionDir = RefractionDirection(1.0,k,E,N);
 	refractedRay.direction = refractionDir; //for refraction
 	refractedRay.generation = hit.ray.generation + 1;
@@ -190,6 +197,12 @@ Color basic_shader::Shade( const Scene &scene, const HitInfo &hit ) const
 		
 			//secondaryRefractedRay.direction = -1*E; //for direct transparency
 			newNormal = refractionHit.normal;
+
+			/*
+			TODO: Try reducing epsilon here and then doing a while loop until 
+					it is inside/outside the object. That could be the reason
+					for refraction problems. 
+			*/
 			secondaryRefractedRay.origin = refractionHit.point + epsilon*newNormal;
 			secondaryRefractedRay.direction = RefractionDirection(k,1.0,-1*refractionDir,-1*newNormal);
 			secondaryRefractedRay.generation = hit.ray.generation + 1;
@@ -226,6 +239,7 @@ Vec3 basic_shader::RefractionDirection(double n_1, double n_2, Vec3 incomingVect
 	double cos_theta = normalVector*incomingVector;
 	Vec3 Refrac_vertical = ratio*( normalVector*cos_theta - incomingVector);
 	double cos_phi_squared = 1 - ( ratio*ratio * (1-cos_theta*cos_theta));
+	if(cos_phi_squared < 0.0) return Vec3();
 	Vec3 Refrac_horizontal = -1*normalVector*sqrt(cos_phi_squared);
 	Vec3 Refrac = Refrac_vertical + Refrac_horizontal;
 	return Unit(Refrac);
