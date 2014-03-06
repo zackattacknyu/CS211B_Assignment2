@@ -173,11 +173,6 @@ Color basic_shader::Shade( const Scene &scene, const HitInfo &hit ) const
 
 	//set variables for refraction
 
-	/*
-	TODO: Try reducing epsilon here and then doing a while loop until 
-			it is inside/outside the object. That could be the reason
-			for refraction problems. 
-	*/
 	refractedRay.origin = P-epsilon*N;
 	
 	Vec3 refractionDir = RefractionDirection(1.0,k,E,N);
@@ -200,33 +195,9 @@ Color basic_shader::Shade( const Scene &scene, const HitInfo &hit ) const
 			newNormal = Unit(newNormal);
 			refractionDir = Unit(refractionDir);
 
-			/*
-			TODO: Try reducing epsilon here and then doing a while loop until 
-					it is inside/outside the object. That could be the reason
-					for refraction problems. 
-			*/
 			secondaryRefractedRay.origin = refractionHit.point + epsilon*newNormal;
 			secondaryRefractedRay.direction = RefractionDirection(k,1.0,-1*refractionDir,-1*newNormal);
 			secondaryRefractedRay.generation = hit.ray.generation + 1;
-
-			//find cases where the two normals are linearly independent
-			/*Vec3 absSurfaceNormal = Vec3(abs(hit.normal.x),abs(hit.normal.y),abs(hit.normal.z));
-			Vec3 absRefractedNormal = Vec3(abs(refractionHit.normal.x),abs(refractionHit.normal.y),abs(refractionHit.normal.z));
-			Vec3 diffNormals = absSurfaceNormal - absRefractedNormal;
-			if(LengthSquared(diffNormals) > epsilon){
-				printf("Different normals: (%f,%f,%f) (%f,%f,%f)\n",hit.normal.x,hit.normal.y,hit.normal.z,refractionHit.normal.x,refractionHit.normal.y,refractionHit.normal.z);
-				printf("Different normals: (%f,%f,%f) (%f,%f,%f)\n",absSurfaceNormal.x,absSurfaceNormal.y,absSurfaceNormal.z,absRefractedNormal.x,absRefractedNormal.y,absRefractedNormal.z);
-				printf("Different normals: (%f,%f,%f)\n",diffNormals.x,diffNormals.y,diffNormals.z);
-			}*/
-
-			//focus on the (0,-1,0) and (-1,0,0) cases
-			/*if(hit.normal.x == 0 && hit.normal.y == -1 && hit.normal.z == 0 && refractionHit.normal.x == -1 && refractionHit.normal.y == 0 && refractionHit.normal.z == 0){
-				printf("Eye Vector: (%f,%f,%f)\n",E.x,E.y,E.z);
-				printf("Normal Vector: (%f,%f,%f)\n",N.x,N.y,N.z);
-				printf("Refraction Vector: (%f,%f,%f)\n",refractionDir.x,refractionDir.y,refractionDir.z);
-				printf("New Normal Vector: (%f,%f,%f)\n",refractionHit.normal.x,refractionHit.normal.y,refractionHit.normal.z);
-				printf("New Secondary Ray: (%f,%f,%f)\n\n",secondaryRefractedRay.direction.x,secondaryRefractedRay.direction.y,secondaryRefractedRay.direction.z);
-			}*/
 
 			//now do refraction
 
