@@ -68,7 +68,7 @@ begin List
 	diffuse      [0.90, 0.90, 0.90]
     specular     [0.10, 0.15, 0.15]
     reflectivity [0.3, 0.3, 0.3]
-    translucency [0.90, 0.90, 0.90]
+    translucency [0.6, 0.6, 0.6]
     Phong_exp    3
     ref_index    2.75
     block        (3.5, -1.4, 1.7) (3.65, -0.7, 2.4)
