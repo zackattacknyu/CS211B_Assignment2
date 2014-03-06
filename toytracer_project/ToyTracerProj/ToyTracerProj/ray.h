@@ -35,6 +35,7 @@ struct Ray {            // A ray in R3.
     Vec3 origin;         // The ray originates from this point.
     Vec3 direction;      // Unit vector indicating direction of ray.
     int  type;           // Different rays may be processed differently.
+	double ref_index;	//ref index of current material the ray is inside
     unsigned generation; // How deep in the ray tree.  1 == generated from eye.
     const Object *from;  // The object from which the ray was cast.
     };
@@ -44,6 +45,7 @@ inline Ray::Ray()
     generation = 1;
     type = generic_ray;
     from = NULL;
+	ref_index = 1.0;
     }
 
 inline Ray::Ray( const Ray &r )
@@ -53,6 +55,7 @@ inline Ray::Ray( const Ray &r )
     generation = r.generation;
     type       = r.type;;
     from       = r.from;
+	ref_index = 1.0;
     }
 
 

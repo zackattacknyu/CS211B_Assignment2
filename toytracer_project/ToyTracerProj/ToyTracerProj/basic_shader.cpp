@@ -171,43 +171,51 @@ Color basic_shader::Shade( const Scene &scene, const HitInfo &hit ) const
 	reflectionRay.generation = hit.ray.generation + 1;
 	reflectedColor = Color();
 
-	//set variables for refraction
-
-	refractedRay.origin = P-epsilon*N;
-	
-	Vec3 refractionDir = RefractionDirection(1.0,k,E,N);
-	refractedRay.direction = refractionDir; //for refraction
-	refractedRay.generation = hit.ray.generation + 1;
-	refractedColor = Color();
-	Vec3 newNormal;
- 	refractionHit.distance = Infinity;
-
 	//only do refraction if the transluency is greater than zero
 	//	this is an optimization so unnecessary refractions are not calculated
 	if( (t.red + t.green + t.blue) > epsilon){
 
-		/* TODO: Reconfigure this to trace through the rays, with the current material
-		*		refraction ratio inside it
-		*/
-		if(scene.Cast(refractedRay,refractionHit)){
+		Vec3 refractionDir;
 
-			//calculate the output ray direction
+		//set variables for refraction
+		refractedRay.origin = P-epsilon*N;
 
+		//whether or not we are inside the material
+		if(hit.ray.ref_index > 1.0){
+
+			//inside the material going outside
+			refractionDir = RefractionDirection(k,1.0,-1*E,-1*N);
 		
-			//secondaryRefractedRay.direction = -1*E; //for direct transparency
-			newNormal = refractionHit.normal;
-			newNormal = Unit(newNormal);
-			refractionDir = Unit(refractionDir);
+			//whether or not there is total internal reflection or refraction
+			if(LengthSquared(refractionDir + R) < epsilon){
 
-			secondaryRefractedRay.origin = refractionHit.point + epsilon*newNormal;
-			secondaryRefractedRay.direction = RefractionDirection(k,1.0,-1*refractionDir,-1*newNormal);
-			secondaryRefractedRay.generation = hit.ray.generation + 1;
+				//total internal reflection
+				refractedRay.ref_index = k;
 
-			//now do refraction
+			}else{
 
-			refractedColor = scene.Trace(secondaryRefractedRay);
-		
+				//puts the ray outside the material for refraction
+				refractedRay.origin = P+epsilon*N;
+				refractedRay.ref_index = 1.0;
+
+			}
+
+		}else{
+
+			//outside the material going inside
+			//in this case, there will be no critical angle, so no need to worry about total internal reflection
+			refractionDir = RefractionDirection(1.0,k,E,N);
+			refractedRay.ref_index = k;
+
 		}
+
+		refractedRay.direction = refractionDir; //for refraction
+		refractedRay.generation = hit.ray.generation + 1;
+		refractedColor = Color();
+
+		
+		refractedColor = scene.Trace(refractedRay);
+
 	}
 	
 
