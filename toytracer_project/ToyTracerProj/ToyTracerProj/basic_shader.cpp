@@ -46,7 +46,7 @@ Color basic_shader::Shade( const Scene &scene, const HitInfo &hit ) const
 
     HitInfo otherhit;
 	HitInfo refractionHit;
-    static const double epsilon = 1.0E-10;
+    static const double epsilon = 1.0E-6;
     if( Emitter( hit.object ) ) return hit.object->material->emission;
 
     Material *mat   = hit.object->material;
@@ -173,12 +173,10 @@ Color basic_shader::Shade( const Scene &scene, const HitInfo &hit ) const
 
 	//only do refraction if the transluency is greater than zero
 	//	this is an optimization so unnecessary refractions are not calculated
+	refractedColor = Color();
 	if( (t.red + t.green + t.blue) > epsilon){
 
 		Vec3 refractionDir;
-
-		//set variables for refraction
-		refractedRay.origin = P-epsilon*N;
 
 		//whether or not we are inside the material
 		if(hit.ray.ref_index > 1.0){
@@ -187,10 +185,13 @@ Color basic_shader::Shade( const Scene &scene, const HitInfo &hit ) const
 			refractionDir = RefractionDirection(k,1.0,-1*E,-1*N);
 		
 			//whether or not there is total internal reflection or refraction
-			if(LengthSquared(refractionDir + R) < epsilon){
+			if(Length(refractionDir + R) < epsilon){
 
 				//total internal reflection
 				refractedRay.ref_index = k;
+
+				//make sure it starts inside material
+				refractedRay.origin = P-epsilon*N;
 
 			}else{
 
@@ -207,13 +208,19 @@ Color basic_shader::Shade( const Scene &scene, const HitInfo &hit ) const
 			refractionDir = RefractionDirection(1.0,k,E,N);
 			refractedRay.ref_index = k;
 
+			//make sure it starts inside material
+			refractedRay.origin = P-epsilon*N;
+
 		}
+
+		//debug code
+		//printf("Eye Vector: (%f,%f,%f)\n",E.x,E.y,E.z);
+		//printf("Normal Vector: (%f,%f,%f)\n",N.x,N.y,N.z);
+		//printf("Refraction Vector: (%f,%f,%f)\n",refractionDir.x,refractionDir.y,refractionDir.z);
+		//printf("(N_1,N_2)=(%f,%f)\n\n",hit.ray.ref_index,refractedRay.ref_index);
 
 		refractedRay.direction = refractionDir; //for refraction
 		refractedRay.generation = hit.ray.generation + 1;
-		refractedColor = Color();
-
-		
 		refractedColor = scene.Trace(refractedRay);
 
 	}

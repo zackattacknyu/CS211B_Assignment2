@@ -24,23 +24,21 @@ The formula will be as follows
     R = R_vert - N*sqrt(cos_phi_squared)
 %}
 
-n_eye = 1.0;
-n_ref = 2.75;
+n_eye = 2.75;
+n_ref = 1.0;
 
-E1 = [0.793434 -0.339863 0.504931];
-N = [0 -1 0];
+E1 = [0.279529 -0.217648 0.935143]; %(2.75 2.75) case
+N1 = [1 0 0];
+
+E2 = [-0.937070 -0.079145 0.340052]; %(2.75 1.2) case
+N2 = [-1 0 0];
 
 N=N/norm(N);
 E1 = E1/norm(E1);
-
-R1 = refractionDirection(n_eye,n_ref,E1,N);
-newN = [-1 0 0];
-newR1 = refractionDirection(n_ref,n_eye,-1*R1,-1*newN);
-
-
-normalx = [newN(1) 0 -newN(1)];
-normaly = [newN(2) 0 -newN(2)];
-
-set1x = [-1*R1(1) 0 newR1(1)];
-set1y = [-1*R1(2) 0 newR1(2)];
-plot(set1x,set1y,normalx,normaly);
+E2 = E2/norm(E2);
+E1 = -E1;
+E2 = -E2;
+N1 = -N1;
+N2 = -N2;
+R1 = refractionDirection(n_eye,n_ref,E1,N1)
+R2 = refractionDirection(n_eye,n_ref,E2,N2)
