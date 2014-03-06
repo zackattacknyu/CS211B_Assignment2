@@ -185,6 +185,10 @@ Color basic_shader::Shade( const Scene &scene, const HitInfo &hit ) const
 	//only do refraction if the transluency is greater than zero
 	//	this is an optimization so unnecessary refractions are not calculated
 	if( (t.red + t.green + t.blue) > epsilon){
+
+		/* TODO: Reconfigure this to trace through the rays, with the current material
+		*		refraction ratio inside it
+		*/
 		if(scene.Cast(refractedRay,refractionHit)){
 
 			//calculate the output ray direction
