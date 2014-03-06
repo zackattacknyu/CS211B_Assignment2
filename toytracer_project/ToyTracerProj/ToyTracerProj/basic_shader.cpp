@@ -171,60 +171,41 @@ Color basic_shader::Shade( const Scene &scene, const HitInfo &hit ) const
 	reflectionRay.generation = hit.ray.generation + 1;
 	reflectedColor = Color();
 
+	//set variables for refraction
+
+	refractedRay.origin = P-epsilon*N;
+
+	Vec3 refractionDir = RefractionDirection(1.0,k,E,N);
+	refractedRay.direction = refractionDir; //for refraction
+	refractedRay.generation = hit.ray.generation + 1;
+	refractedColor = Color();
+	Vec3 newNormal;
+ 	refractionHit.distance = Infinity;
+
 	//only do refraction if the transluency is greater than zero
 	//	this is an optimization so unnecessary refractions are not calculated
-	refractedColor = Color();
 	if( (t.red + t.green + t.blue) > epsilon){
+		if(scene.Cast(refractedRay,refractionHit)){
 
-		Vec3 refractionDir;
+			//calculate the output ray direction
 
-		//whether or not we are inside the material
-		if(hit.ray.ref_index > 1.0){
 
-			//inside the material going outside
-			refractionDir = RefractionDirection(k,1.0,-1*E,-1*N);
-		
-			//whether or not there is total internal reflection or refraction
-			if(Length(refractionDir + R) < epsilon){
+			//secondaryRefractedRay.direction = -1*E; //for direct transparency
+			newNormal = refractionHit.normal;
+			newNormal = Unit(newNormal);
+			refractionDir = Unit(refractionDir);
 
-				//total internal reflection
-				refractedRay.ref_index = k;
+			secondaryRefractedRay.origin = refractionHit.point + epsilon*newNormal;
+			secondaryRefractedRay.direction = RefractionDirection(k,1.0,-1*refractionDir,-1*newNormal);
+			secondaryRefractedRay.generation = hit.ray.generation + 1;
 
-				//make sure it starts inside material
-				refractedRay.origin = P-epsilon*N;
+			//now do refraction
 
-			}else{
-
-				//puts the ray outside the material for refraction
-				refractedRay.origin = P+epsilon*N;
-				refractedRay.ref_index = 1.0;
-
-			}
-
-		}else{
-
-			//outside the material going inside
-			//in this case, there will be no critical angle, so no need to worry about total internal reflection
-			refractionDir = RefractionDirection(1.0,k,E,N);
-			refractedRay.ref_index = k;
-
-			//make sure it starts inside material
-			refractedRay.origin = P-epsilon*N;
+			refractedColor = scene.Trace(secondaryRefractedRay);
 
 		}
-
-		//debug code
-		//printf("Eye Vector: (%f,%f,%f)\n",E.x,E.y,E.z);
-		//printf("Normal Vector: (%f,%f,%f)\n",N.x,N.y,N.z);
-		//printf("Refraction Vector: (%f,%f,%f)\n",refractionDir.x,refractionDir.y,refractionDir.z);
-		//printf("(N_1,N_2)=(%f,%f)\n\n",hit.ray.ref_index,refractedRay.ref_index);
-
-		refractedRay.direction = refractionDir; //for refraction
-		refractedRay.generation = hit.ray.generation + 1;
-		refractedColor = scene.Trace(refractedRay);
-
 	}
-	
+
 
 	//do the reflection
 	//only do reflection if the reflectance is greater than zero
@@ -232,6 +213,12 @@ Color basic_shader::Shade( const Scene &scene, const HitInfo &hit ) const
 	if( (r.red + r.green + r.blue) > epsilon){
 		reflectedColor = scene.Trace(reflectionRay);
 	}
+	
+	//debug code
+	//printf("Eye Vector: (%f,%f,%f)\n",E.x,E.y,E.z);
+	//printf("Normal Vector: (%f,%f,%f)\n",N.x,N.y,N.z);
+	//printf("Refraction Vector: (%f,%f,%f)\n",refractionDir.x,refractionDir.y,refractionDir.z);
+	//printf("(N_1,N_2)=(%f,%f)\n\n",hit.ray.ref_index,refractedRay.ref_index);
 	
 
 	//now combine calculated color with reflected color
@@ -252,7 +239,9 @@ Vec3 basic_shader::RefractionDirection(double n_1, double n_2, Vec3 incomingVect
 	double cos_phi_squared = 1 - ( ratio*ratio * (1-cos_theta*cos_theta));
 	
 	//total internal reflection occurs
+	//	return nothing as the reflection vector will cover it
 	if(cos_phi_squared < 0.0){
+		//return Vec3();
 		return Unit( ( 2.0 * ( incomingVector * normalVector ) ) * normalVector - incomingVector );
 	}
 
