@@ -239,10 +239,9 @@ Vec3 basic_shader::RefractionDirection(double n_1, double n_2, Vec3 incomingVect
 	double cos_phi_squared = 1 - ( ratio*ratio * (1-cos_theta*cos_theta));
 	
 	//total internal reflection occurs
-	//	return nothing as the reflection vector will cover it
 	if(cos_phi_squared < 0.0){
-		//return Vec3();
-		return Unit( ( 2.0 * ( incomingVector * normalVector ) ) * normalVector - incomingVector );
+		return Vec3();
+		//return Unit( ( 2.0 * ( incomingVector * normalVector ) ) * normalVector - incomingVector );
 	}
 
 	Vec3 Refrac_horizontal = -1*normalVector*sqrt(cos_phi_squared);
